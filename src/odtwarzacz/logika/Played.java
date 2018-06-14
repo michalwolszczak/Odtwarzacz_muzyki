@@ -36,18 +36,18 @@ public class Played {
 
             seconds = duration % 60;
             minute = (duration - seconds) / 60;
-//
-//            if (seconds < 10) {
-//                mp3Second = "0" + seconds;
-//            } else {
-//                mp3Second = "" + seconds;
-//            }
-//
-//            if (minute < 10) {
-//                mp3Minutes = "0" + minute;
-//            } else {
-//                mp3Minutes = "" + minute;
-//            }
+
+            if (seconds < 10) {
+                mp3Second = "0" + seconds;
+            } else {
+                mp3Second = "" + seconds;
+            }
+
+            if (minute < 10) {
+                mp3Minutes = "0" + minute;
+            } else {
+                mp3Minutes = "" + minute;
+            }
         }
         catch (Exception e) {
             System.out.println("Problem playing file " + filename);
@@ -60,7 +60,7 @@ public class Played {
                 catch (Exception e) { System.out.println(e); }
             }
         }.start();
-        return minute+"."+seconds;
+        return mp3Minutes+"."+mp3Second;
     }
 
 

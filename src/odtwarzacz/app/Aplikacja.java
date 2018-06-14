@@ -2,23 +2,23 @@ package odtwarzacz.app;
 
 import odtwarzacz.logika.Played;
 import odtwarzacz.widoki.MyFrame;
-import odtwarzacz.widoki.MyPanel;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
-import java.util.TimerTask;
 import java.util.Timer;
+import java.util.TimerTask;
 
 public class Aplikacja {
     private Played mp3 = null;
-    private String filename,timeS;
-    private double timeD,songTimeMili;
-    private MyPanel panel;
+    public String filename,timeS,minutes,seconds;
+    private double timeD;
+    private MyFrame panel;
     private volatile boolean running = true;
     private Timer timer1;
+    private int sec = 1;
     public Aplikacja() throws IOException {
-        panel = new MyPanel();
+        //panel = new MyFrame();
     }
 
     public static void main(String[] args){
@@ -52,33 +52,38 @@ public class Aplikacja {
 
     public void startProgress(JProgressBar progressBar){
         timeD = Double.parseDouble(timeS);
-        songTimeMili = timeD*60*10;
-        progressBar.setMaximum((int)songTimeMili);
+        minutes = timeS.substring(0,timeS.indexOf("."));
+        seconds = timeS.substring(timeS.indexOf(".")+1,timeS.length());
+
+        progressBar.setMaximum(Integer.parseInt(minutes)*60 + Integer.parseInt(seconds));
         running = true;
+
+//        new Thread() {
+//            public void run() {
+//                try {
+//                    while (running) {
+//                        progressBar.setValue(progressBar.getValue()+1);
+//                        Thread.sleep(1000);
+//                    }
+//                }
+//                catch (Exception e) { System.out.println(e); }
+//            }
+//        }.start();
 
         timer1 = new Timer();
         timer1.schedule(new TimerTask() {
             @Override
             public void run() {
-                progressBar.setValue(progressBar.getValue()+1);
+                progressBar.setValue(sec);
+                sec++;
             }
         }, 1000, 1000);
-
-
-        new Thread() {
-            public void run() {
-                try {
-                    while (running) {
-                        progressBar.setValue(progressBar.getValue()+1);
-                        Thread.sleep(100);
-                    }
-                }
-                catch (Exception e) { System.out.println(e); }
-            }
-        }.start();
     }
 
     public void pauseProgress() {
         running = false;
+        timer1.cancel();
+        timer1.purge();
+        System.out.println(timer1.purge());
     }
 }
