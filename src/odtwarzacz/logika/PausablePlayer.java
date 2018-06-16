@@ -82,8 +82,8 @@ public class PausablePlayer {
 
     public String getTrackLength(File filename) throws TagException, ReadOnlyFileException, CannotReadException, InvalidAudioFrameException, IOException {
             this.filename = filename;
-            AudioFile audioFile = AudioFileIO.read(filename);
-            int duration = audioFile.getAudioHeader().getTrackLength();
+            audioFile = AudioFileIO.read(filename);
+            duration = audioFile.getAudioHeader().getTrackLength();
 
             seconds = duration % 60;
             minute = (duration - seconds) / 60;

@@ -1,43 +1,31 @@
 package odtwarzacz.widoki;
 
-import javazoom.jl.decoder.JavaLayerException;
 import odtwarzacz.app.Aplikacja;
-import org.jaudiotagger.audio.exceptions.CannotReadException;
-import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
-import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
-import org.jaudiotagger.tag.TagException;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.awt.event.ActionEvent;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class MyFrame extends JFrame {
-    private Image imgTlo;
     public static ImageIcon iconStart,iconPause, iconNext, iconBef;
     private JLabel labelTime,labelTimeEnd, labelTitle;
-    public JButton buttonStart, buttonNext, buttonBef;
-    public Border emptyBorder;
-    public Aplikacja app;
-    public JProgressBar progressBar;
+    private JButton buttonStart, buttonNext, buttonBef;
+    private Border emptyBorder;
+    private Aplikacja app;
+    private JProgressBar progressBar;
     private Timer timer1;
     private int timeM = 0,timeS = 0;
     private String timeMi,timeSi,time,title;
     private boolean play = false;
 
-    public MyFrame() throws IOException {
+    public MyFrame() {
         super("Odtwarzacz MP3");
         setLayout(null);
         setPreferredSize(new Dimension(1024, 768));
-        imgTlo = ImageIO.read(new File("C:\\Users\\Michał\\Desktop\\tlo.png"));
-        //this.setContentPane(new ImagePanel(imgTlo));
         this.getContentPane().setBackground(Color.white);
-
 
         labelTime = new JLabel();
         labelTime.setText("00:00");
@@ -57,12 +45,15 @@ public class MyFrame extends JFrame {
 
         buttonStart = new JButton();
         buttonStart.setBounds(470,600,100,100);
+        buttonStart.setName("buttonStart");
 
         buttonNext = new JButton();
         buttonNext.setBounds(570,600,100,100);
+        buttonNext.setName("buttonNext");
 
         buttonBef = new JButton();
         buttonBef.setBounds(370,600,100,100);
+        buttonBef.setName("buttonBef");
 
         emptyBorder = BorderFactory.createEmptyBorder();
         buttonStart.setBorder(emptyBorder);
@@ -76,59 +67,17 @@ public class MyFrame extends JFrame {
         buttonNext.setIcon(iconNext);
         buttonBef.setIcon(iconBef);
 
-        buttonStart.addActionListener(e -> {
-            if (play == false) play = true;
-            else play = false;
+        buttonStart.addActionListener((ActionEvent e) -> {
+            play = !play;
 
             if (app == null) {
                 app = new Aplikacja();
             }
-            try {
-                app.logic(buttonStart, progressBar, play);
-            } catch (FileNotFoundException e1) {
-                e1.printStackTrace();
-            } catch (JavaLayerException e1) {
-                e1.printStackTrace();
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            } catch (CannotReadException e1) {
-                e1.printStackTrace();
-            } catch (ReadOnlyFileException e1) {
-                e1.printStackTrace();
-            } catch (TagException e1) {
-                e1.printStackTrace();
-            } catch (InvalidAudioFrameException e1) {
-                e1.printStackTrace();
-            }
-            //time = app.timeS.replace(".",":");
-            if (play == false){
-                timer1.cancel();
-            } else{
-                timer1 = new Timer();
-                timer1.schedule(new TimerTask() {
-                    @Override
-                    public void run() {
-                        if (timeS == 59) {
-                            timeS = 0;
-                            timeM += 1;
-                        }
-                        timeS += 1;
 
-                        timeSi = String.valueOf(timeS);
-                        timeMi = String.valueOf(timeM);
+            app.logic(buttonStart, progressBar, play, false);
 
-                        if (timeM<=9){
-                            timeMi = "0" + String.valueOf(timeM);
-                        }
-
-                        if (timeS<=9){
-                            timeSi = "0" + String.valueOf(timeS);
-                        }
-                        if (time != null && time.equals(timeMi+":"+timeSi)) timer1.cancel();
-                        labelTime.setText(timeMi+":"+timeSi);
-                    }
-                }, 1000, 1000);
-            }
+            time = app.timeS.replace(".",":");
+            startTime(play,false);
 
             if (app.timeS != null) labelTimeEnd.setText(app.timeS.replace(".",":"));
             if (app.filename != null) {
@@ -138,6 +87,16 @@ public class MyFrame extends JFrame {
             }
 
         });
+
+        buttonNext.addActionListener(e -> System.out.println("1"));
+
+        buttonBef.addActionListener((ActionEvent e) -> {
+            labelTime.setText("00:00");
+            app.logic(buttonStart, progressBar,true,true);
+            startTime(true,true);
+            app.startProgress(progressBar, true);
+        });
+
 
         add(progressBar);
         add(buttonStart);
@@ -149,22 +108,57 @@ public class MyFrame extends JFrame {
 
         pack();
         setLocationRelativeTo(null);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setVisible(true);
     }
-}
 
-class ImagePanel extends JComponent {
-    private Image image;
-    public ImagePanel(Image image) {
-        this.image = image;
-    }
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        g.drawImage(image, 0, 0, this);
+    private void startTime(boolean play, boolean param1){
+        if (!play){
+            timer1.cancel();
+        } else{
+            if (param1) {
+                timer1.cancel();
+                timeS = 0; timeM = 0;
+            }
+            timer1 = new Timer();
+            timer1.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    if (timeS == 59) {
+                        timeS = 0;
+                        timeM += 1;
+                    }
+                    timeS += 1;
+
+                    timeSi = String.valueOf(timeS);
+                    timeMi = String.valueOf(timeM);
+
+                    if (timeM<=9){
+                        timeMi = "0" + String.valueOf(timeM);
+                    }
+
+                    if (timeS<=9){
+                        timeSi = "0" + String.valueOf(timeS);
+                    }
+                    if (time != null && time.equals(timeMi+":"+timeSi)) timer1.cancel();
+                    labelTime.setText(timeMi+":"+timeSi);
+                }
+            }, 1000, 1000);
+        }
     }
 }
+//
+//class ImagePanel extends JComponent {
+//    private Image image;
+//    public ImagePanel(Image image) {
+//        this.image = image;
+//    }
+//    @Override
+//    protected void paintComponent(Graphics g) {
+//        super.paintComponent(g);
+//        g.drawImage(image, 0, 0, this);
+//    }
+//}
 
 
 
